@@ -164,7 +164,7 @@ void Player::UpdateFlotingGimmick() {
 	worldTransform_.translation_.y = w[1];
 	worldTransform_.translation_.z = w[2];
 
-	ImGui::Begin("Player");
+	/*ImGui::Begin("Player");
 	float Head[3] = {
 	    worldTransformHead_.translation_.x, worldTransformHead_.translation_.y,
 	    worldTransformHead_.translation_.z};
@@ -198,7 +198,7 @@ void Player::UpdateFlotingGimmick() {
 	worldTransformR_arm_.translation_.y = ArmR[1];
 	worldTransformR_arm_.translation_.z = ArmR[2];
 
-	ImGui::End();
+	ImGui::End();*/
 }
 
 void Player::UpdataArmAnimation() {
