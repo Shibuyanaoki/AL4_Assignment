@@ -1,6 +1,6 @@
 ﻿#include "Player.h"
-#include "ImGuiManager.h"
 #include "Easings.h"
+#include "ImGuiManager.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -93,7 +93,6 @@ void Player::Updata() {
 	worldTransformL_arm_.UpdateMatrix();
 	worldTransformR_arm_.UpdateMatrix();
 	worldTransformHammer_.UpdateMatrix();
-
 }
 
 void Player::Draw(const ViewProjection& viewProjection) {
@@ -102,7 +101,7 @@ void Player::Draw(const ViewProjection& viewProjection) {
 	models_[kModelIndexHead]->Draw(worldTransformHead_, viewProjection);
 	models_[kModelIndexL_arm]->Draw(worldTransformL_arm_, viewProjection);
 	models_[kModelIndexR_arm]->Draw(worldTransformR_arm_, viewProjection);
-	
+
 	if (behavior_ == Behavior::kAttack) {
 		models_[kModelHammer]->Draw(worldTransformHammer_, viewProjection);
 	}
@@ -123,6 +122,18 @@ Vector3 Player::GetWorldPosition() {
 const WorldTransform& Player::GetWorldTransform() {
 	// TODO: return ステートメントをここに挿入します
 	return worldTransform_;
+}
+
+Vector3 Player::GetHammerWorldPosition() {
+	// ワールド座標を入れる変数
+	Vector3 worldPos;
+
+	// ワールド行列の平行移動成分を取得(ワールド座標)
+	worldPos.x = worldTransformHammer_.matWorld_.m[3][0];
+	worldPos.y = worldTransformHammer_.matWorld_.m[3][1];
+	worldPos.z = worldTransformHammer_.matWorld_.m[3][2];
+
+	return worldPos;
 }
 
 void Player::InitializeFloatingGimmick() { floatingParameter_ = 0.0f; }
@@ -166,9 +177,14 @@ void Player::UpdateFlotingGimmick() {
 	    worldTransformR_arm_.translation_.x, worldTransformR_arm_.translation_.y,
 	    worldTransformR_arm_.translation_.z};
 
+	float position[3] = {
+	    worldTransform_.translation_.x, worldTransform_.translation_.y,
+	    worldTransform_.translation_.z};
+
 	ImGui::SliderFloat3("Head Translation", Head, -30.0f, 30.0f);
 	ImGui::SliderFloat3("ArmL Translation", ArmL, -10, 10);
 	ImGui::SliderFloat3("ArmR Translation", ArmR, -30, 30);
+	ImGui::SliderFloat3("Translation",position, -30, 30);
 
 	worldTransformHead_.translation_.x = Head[0];
 	worldTransformHead_.translation_.y = Head[1];
@@ -217,6 +233,8 @@ void Player::BehaviorAttackInitialize() {}
 void Player::BehaviorRootUpdate() {
 	// BaseCharacter::Updata();
 
+	hammerFlag = false;
+
 	UpdateFlotingGimmick();
 
 	UpdataArmAnimation();
@@ -257,7 +275,6 @@ void Player::BehaviorRootUpdate() {
 
 		// 移動
 		worldTransform_.translation_ = Add(worldTransform_.translation_, move);
-
 	}
 
 	// ゲームパッド状態取得
@@ -272,23 +289,34 @@ void Player::BehaviorRootUpdate() {
 
 void Player::BehaviorAttackUpdate() {
 
+	
+
 	const float kDegreeToRadian = (float)M_PI / 180.0f;
 
 	attackTime_++;
 	if (attackTime_ <= attackTimeMax_) {
-		 float frame = (float)(attackTime_ / attackTimeMax_);
-		 float easeInBack = EaseInBack(frame * frame);
-		 float weaponAngle = (float)((90 * kDegreeToRadian)) * easeInBack;
-		 float armAngle = (float)((120 * kDegreeToRadian)) * easeInBack;
-		 worldTransformHammer_.rotation_.x = weaponAngle;
-		 worldTransformL_arm_.rotation_.x = armAngle + (float)M_PI;
-		 worldTransformR_arm_.rotation_.x = armAngle + (float)M_PI;
+		float frame = (float)(attackTime_ / attackTimeMax_);
+		float easeInBack = EaseInBack(frame * frame);
+		float weaponAngle = (float)((90 * kDegreeToRadian)) * easeInBack;
+		float armAngle = (float)((120 * kDegreeToRadian)) * easeInBack;
+		worldTransformHammer_.rotation_.x = weaponAngle;
+		worldTransformL_arm_.rotation_.x = armAngle + (float)M_PI;
+		worldTransformR_arm_.rotation_.x = armAngle + (float)M_PI;
 
 	} else if (attackTime_ >= frameEnd_) {
-		 attackTime_ = 0;
-		 behaviorRequest_ = Behavior::kRoot;
+		attackTime_ = 0;
+		behaviorRequest_ = Behavior::kRoot;
+
+		hammerFlag = true;
+
 	} else if (attackTime_ >= attackTimeMax_) {
-	// アニメーションが終わったらカメラを揺らす
-		 //FollowCamera
+		// アニメーションが終わったらカメラを揺らす
+		// FollowCamera
 	}
+}
+
+void Player::ResetPosition() {
+	worldTransform_.rotation_ = {0.0f, 0.0f, 0.0f};
+	worldTransform_.translation_ = {0.0f, 0.0f, 0.0f};
+	worldTransform_.UpdateMatrix();
 }

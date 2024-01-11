@@ -51,6 +51,8 @@ public: // メンバ関数
 	void SetNearZ(float value) { viewProjection_.nearZ = value; }
 	void SetFarZ(float value) { viewProjection_.farZ = value; }
 
+	void ResetPosition();
+
 private:
 	Input* input_ = nullptr;
 

@@ -46,9 +46,16 @@ public: // メンバ関数
 	Vector3 GetWorldPosition();
 	const WorldTransform& GetWorldTransform();
 
+	/// <summary>
+	/// ハンマーワールド座標を取得
+	/// </summary>
+	Vector3 GetHammerWorldPosition();
+
 	void SetViewProjection(const ViewProjection* viewProjection) {
 		viewProjection_ = viewProjection;
 	}
+
+	bool HammerFlag() { return hammerFlag; }
 
 	/// <summary>
 	/// 浮遊ギミック初期化
@@ -86,6 +93,11 @@ public: // メンバ関数
 
 	Behavior behavior_ = Behavior::kRoot;
 
+	// getter
+	float GetRadius() { return radius_; }
+
+	void ResetPosition();
+
 private:
 	Input* input_ = nullptr;
 
@@ -122,5 +134,10 @@ private:
 
 	// フレーム
 	float frameEnd_ = 120;
+
+	// 半径
+	float radius_ = 4;
+
+	bool hammerFlag = false;
 
 };
